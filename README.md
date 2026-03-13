@@ -220,3 +220,17 @@ Best Use Case	Simple integrations	Complex integrations	Very large datasets
 
 
 ---
+
+
+
+Problem Statement (Short)
+
+An integration is required to synchronize Agent–Manager hierarchy data between AWS and Salesforce using the fields Agent BRID, Manager BRID, and TSYS ID received from AWS.
+
+The Contact object represents agents and managers and maintains the reporting hierarchy through the Reports To field, while the User object maintains the system hierarchy through the Manager field.
+
+The system must ensure that the Agent Contact is mapped to the correct Manager Contact. If the Agent Contact does not exist, it should be created using information from the corresponding User record. If the Manager Contact does not exist, the system must check for the Manager User and create a Manager Contact if necessary. If neither exists, the Default Contact Owner should be assigned as the manager.
+
+Additionally, the Agent User record must reflect the correct Manager relationship and TSYS ID based on the data received from AWS.
+
+The goal of this integration is to maintain accurate reporting hierarchy and user information in Salesforce aligned with AWS data.
