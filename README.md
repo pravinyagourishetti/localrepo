@@ -1,3 +1,163 @@
+<template>
+    <div class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
+        <div class="slds-modal__container">
+
+            <!-- HEADER -->
+            <header class="slds-modal__header">
+                <h2 id="modal-heading" class="slds-text-heading_medium">
+                    Identity Verification Required
+                </h2>
+            </header>
+
+            <!-- BODY -->
+            <div class="slds-modal__content slds-p-around_medium">
+
+                <!-- DATATABLE -->
+                <lightning-datatable
+                    key-field="id"
+                    data={data}
+                    columns={columns}
+                    onrowaction={openCustomerLanding}
+                    aria-labelledby="modal-heading">
+                </lightning-datatable>
+
+                <!-- APPROVE API MESSAGE -->
+                <template if:true={isApproveApi}>
+                    <div class="slds-box slds-box_small slds-m-top_small">
+                        <p aria-live="polite">
+                            <lightning-formatted-text
+                                value="Approve API is called">
+                            </lightning-formatted-text>
+                        </p>
+                    </div>
+                </template>
+
+                <!-- QUESTIONS -->
+                <template if:true={resultData.questions}>
+                    <div role="group" class="slds-m-top_medium">
+
+                        <template for:each={resultData.questions} for:item="q">
+                            <div key={q.id} class="slds-m-bottom_small">
+
+                                <lightning-input
+                                    label={q.label}
+                                    value={q.value}
+                                    data-id={q.id}
+                                    onchange={handleInputChange}>
+                                </lightning-input>
+
+                            </div>
+                        </template>
+
+                    </div>
+                </template>
+
+            </div>
+
+            <!-- FOOTER -->
+            <footer class="slds-modal__footer">
+
+                <!-- NORMAL FLOW -->
+                <template if:false={agentLandingButton}>
+
+                    <!-- UNIDENTIFIED BUTTON -->
+                    <template if:true={isDisplayUnidentifiedBtn}>
+                        <lightning-button
+                            label={label.Unidentified_Prospect_Button}
+                            title={label.Unidentified_Prospect_Button}
+                            onclick={openworkflowtiav}
+                            icon-name="utility:user"
+                            variant="neutral"
+                            class="slds-m-right_small">
+                        </lightning-button>
+                    </template>
+
+                    <!-- DROPDOWN -->
+                    <lightning-combobox
+                        label="Call Dropped Reason"
+                        value={value}
+                        variant="label-hidden"
+                        placeholder="Close Customer Locate"
+                        options={options}
+                        onchange={handleCallDropdownChange}
+                        class="slds-m-right_small">
+                    </lightning-combobox>
+
+                    <!-- BYPASS BUTTON -->
+                    <template if:true={showBypassBtn}>
+                        <lightning-button
+                            variant="brand"
+                            label="ByPass"
+                            onclick={handleBypassButton}
+                            disabled={bypassButtonDisabled}
+                            class="slds-m-right_small">
+                        </lightning-button>
+                    </template>
+
+                    <!-- VERIFY BUTTON -->
+                    <lightning-button
+                        variant="brand"
+                        label="Verify"
+                        onclick={handleSubmit}
+                        disabled={checkValidity}>
+                    </lightning-button>
+
+                </template>
+
+                <!-- AGENT LANDING BUTTON -->
+                <template if:true={agentLandingButton}>
+                    <lightning-button
+                        variant="brand"
+                        label={btnAgentLandingText}
+                        onclick={handleReloadButtuon}>
+                    </lightning-button>
+                </template>
+
+            </footer>
+        </div>
+    </div>
+
+    <!-- BACKDROP -->
+    <div class="slds-backdrop slds-backdrop_open"></div>
+
+    <!-- WORKFLOW POPUP -->
+    <template if:true={showworkFlow}>
+        <div class="slds-modal slds-fade-in-open">
+
+            <div class="slds-modal__container">
+
+                <lightning-icon
+                    icon-name="utility:close"
+                    size="small"
+                    onclick={closeworkflowNav}
+                    class="slds-m-around_small">
+                </lightning-icon>
+
+                <c-care_unidentifyworkflow
+                    account-info={accountInfo}
+                    unidentifyinfo={unidentifyinfo}
+                    onclosemodalworkflow={closemodalworkflow}
+                    ucontactid={ucontactid}
+                    idnvobj={idnvobj}>
+                </c-care_unidentifyworkflow>
+
+            </div>
+        </div>
+
+        <div class="slds-backdrop slds-backdrop_open"></div>
+    </template>
+
+    <!-- STEP UP COMPONENT -->
+    <template if:true={isStepUpApi}>
+        <c-care_step-up-container
+            onstepupvalidatesuccess={handleActivityResponse}
+            ondecision={handleDecision}>
+        </c-care_step-up-container>
+    </template>
+
+</template>
+
+
 Below are the three final approaches you can include in your design document for this integration scenario (~5,000 records/day with Agent–Manager hierarchy validation).
 
 
