@@ -1,161 +1,151 @@
-<template>
-    <div class="slds-modal slds-fade-in-open" role="dialog" aria-modal="true">
-        <div class="slds-modal__container">
+<template if:true={resultData.questions}>
+  <template for:each={resultData.questions} for:item="q" for:index="index">
+    <div key={q.id} class="question-wrapper slds-m-bottom_medium">
+      
+      <!-- Visible label (properly associated) -->
+      <label 
+        class="slds-form-element_label bold-label" 
+        id={q.id}
+        for={q.code}>
+        {q.text}<span style="color: red;">*</span>
+      </label>
 
-            <!-- HEADER -->
-            <header class="slds-modal__header">
-                <h2 id="modal-heading" class="slds-text-heading_medium">
-                    Identity Verification Required
-                </h2>
-            </header>
+      <!-- lightning-input – simplified, no extra live regions -->
+      <lightning-input 
+        type={q.type}
+        date-style="short"
+        id={q.code}
+        name={q.id}
+        required
+        autocomplete="off"
+        label={q.text}
+        variant="label-hidden"
+        class={q.dob}
+        maxlength={q.maxlength}
+        onchange={handleValidations}
+        data-type="user-input"
+        aria-labelledby={q.id}
+        aria-required="true">
+      </lightning-input>
 
-            <!-- BODY -->
-            <div class="slds-modal__content slds-p-around_medium">
-
-                <!-- DATATABLE -->
-                <lightning-datatable
-                    key-field="id"
-                    data={data}
-                    columns={columns}
-                    onrowaction={openCustomerLanding}
-                    aria-labelledby="modal-heading">
-                </lightning-datatable>
-
-                <!-- APPROVE API MESSAGE -->
-                <template if:true={isApproveApi}>
-                    <div class="slds-box slds-box_small slds-m-top_small">
-                        <p aria-live="polite">
-                            <lightning-formatted-text
-                                value="Approve API is called">
-                            </lightning-formatted-text>
-                        </p>
-                    </div>
-                </template>
-
-                <!-- QUESTIONS -->
-                <template if:true={resultData.questions}>
-                    <div role="group" class="slds-m-top_medium">
-
-                        <template for:each={resultData.questions} for:item="q">
-                            <div key={q.id} class="slds-m-bottom_small">
-
-                                <lightning-input
-                                    label={q.label}
-                                    value={q.value}
-                                    data-id={q.id}
-                                    onchange={handleInputChange}>
-                                </lightning-input>
-
-                            </div>
-                        </template>
-
-                    </div>
-                </template>
-
-            </div>
-
-            <!-- FOOTER -->
-            <footer class="slds-modal__footer">
-
-                <!-- NORMAL FLOW -->
-                <template if:false={agentLandingButton}>
-
-                    <!-- UNIDENTIFIED BUTTON -->
-                    <template if:true={isDisplayUnidentifiedBtn}>
-                        <lightning-button
-                            label={label.Unidentified_Prospect_Button}
-                            title={label.Unidentified_Prospect_Button}
-                            onclick={openworkflowtiav}
-                            icon-name="utility:user"
-                            variant="neutral"
-                            class="slds-m-right_small">
-                        </lightning-button>
-                    </template>
-
-                    <!-- DROPDOWN -->
-                    <lightning-combobox
-                        label="Call Dropped Reason"
-                        value={value}
-                        variant="label-hidden"
-                        placeholder="Close Customer Locate"
-                        options={options}
-                        onchange={handleCallDropdownChange}
-                        class="slds-m-right_small">
-                    </lightning-combobox>
-
-                    <!-- BYPASS BUTTON -->
-                    <template if:true={showBypassBtn}>
-                        <lightning-button
-                            variant="brand"
-                            label="ByPass"
-                            onclick={handleBypassButton}
-                            disabled={bypassButtonDisabled}
-                            class="slds-m-right_small">
-                        </lightning-button>
-                    </template>
-
-                    <!-- VERIFY BUTTON -->
-                    <lightning-button
-                        variant="brand"
-                        label="Verify"
-                        onclick={handleSubmit}
-                        disabled={checkValidity}>
-                    </lightning-button>
-
-                </template>
-
-                <!-- AGENT LANDING BUTTON -->
-                <template if:true={agentLandingButton}>
-                    <lightning-button
-                        variant="brand"
-                        label={btnAgentLandingText}
-                        onclick={handleReloadButtuon}>
-                    </lightning-button>
-                </template>
-
-            </footer>
+      <!-- Checkboxes stay the same (no aria-live) -->
+      <template for:each={q.autoFillCheckboxList} for:item="eachCheckBox">
+        <div key={eachCheckBox.dob} class={eachCheckBox.className}>
+          <lightning-input 
+            class={eachCheckBox.inputClassName} 
+            type="checkbox"
+            onclick={handleCheckBoxOnChange}>
+          </lightning-input>
+          <label class="slds-form-element_label bold-label">
+            {eachCheckBox.label}
+          </label>
         </div>
+      </template>
+
     </div>
-
-    <!-- BACKDROP -->
-    <div class="slds-backdrop slds-backdrop_open"></div>
-
-    <!-- WORKFLOW POPUP -->
-    <template if:true={showworkFlow}>
-        <div class="slds-modal slds-fade-in-open">
-
-            <div class="slds-modal__container">
-
-                <lightning-icon
-                    icon-name="utility:close"
-                    size="small"
-                    onclick={closeworkflowNav}
-                    class="slds-m-around_small">
-                </lightning-icon>
-
-                <c-care_unidentifyworkflow
-                    account-info={accountInfo}
-                    unidentifyinfo={unidentifyinfo}
-                    onclosemodalworkflow={closemodalworkflow}
-                    ucontactid={ucontactid}
-                    idnvobj={idnvobj}>
-                </c-care_unidentifyworkflow>
-
-            </div>
-        </div>
-
-        <div class="slds-backdrop slds-backdrop_open"></div>
-    </template>
-
-    <!-- STEP UP COMPONENT -->
-    <template if:true={isStepUpApi}>
-        <c-care_step-up-container
-            onstepupvalidatesuccess={handleActivityResponse}
-            ondecision={handleDecision}>
-        </c-care_step-up-container>
-    </template>
-
+  </template>
 </template>
+
+
+// After modal opens and questions are rendered
+renderedCallback() {
+  if (this.modalIsOpen && this.resultData?.questions?.length) {
+    // Focus the very first input
+    const firstInput = this.template.querySelector('lightning-input');
+    if (firstInput) {
+      firstInput.focus();
+    }
+  }
+}
+
+
+
+handleValidations(event) {
+    const input = event.target;
+    const fieldId = input.id || '';
+    const value = input.value ? input.value.trim() : '';
+
+    // Reset error state first (important!)
+    input.setCustomValidity('');
+    // Do NOT manually set aria-invalid or aria-errormessage here
+    // lightning-input will manage it based on setCustomValidity
+
+    if (fieldId.includes('LAST_4_SSN')) {
+        input.value = value.replace(/[^0-9]/g, '');   // cleaned regex
+
+        if (value === '') {
+            input.setCustomValidity(FIELD_NOT_BLANK);
+        } else if (value.length === 4) {
+            // valid case - do nothing (empty custom validity = valid)
+        } else {
+            input.setCustomValidity(FIELD_SSN_DIGIT);
+        }
+        input.reportValidity();
+        this.checkValidity = input.validity.valid === false;   // better way
+    }
+
+    else if (fieldId.includes('DATE_OF_BIRTH')) {
+        // your date formatting logic here...
+        this.dobvalidation(event);   // keep your existing helper if needed
+    }
+
+    else if (fieldId.includes('PHONE_ON_PROFILE')) {
+        input.value = value.replace(/\D/g, '');   // only digits
+
+        if (value === '') {
+            input.setCustomValidity(FIELD_NOT_BLANK);
+        } else if (value.length === 10) {
+            // valid
+        } else {
+            input.setCustomValidity(FIELD_PHONE_DIGIT);
+        }
+        input.reportValidity();
+        this.checkValidity = !input.validity.valid;
+    }
+
+    else if (fieldId.includes('ACCOUNT_NUMBER')) {
+        input.value = value.replace(/[^0-9]/g, '');
+
+        if (value === '') {
+            input.setCustomValidity(FIELD_NOT_BLANK);
+        } else if (value.length === 16) {   // adjust length as per your requirement
+            // valid
+        } else {
+            input.setCustomValidity(FIELD_ACC_NUMBER);
+        }
+        input.reportValidity();
+        this.checkValidity = !input.validity.valid;
+    }
+
+    else if (fieldId.includes('MAGIC_PASSWORD')) {
+        const isValidAlphaNum = handleAlphaNumericValidation(value);
+        this.isDisplayUnidentifiedPrsn = false;   // fixed typo in your original
+
+        if (value === '') {
+            this.setValidationMessage(event, FIELD_NOT_BLANK, true);   // use your helper
+            this.bypassButton = { ...this.bypassButton, disabled: false };
+        } else if (isValidAlphaNum) {
+            this.setValidationMessage(event, '', false);
+        } else {
+            this.setValidationMessage(event, this.labelUtility.constants.VerbalPwdValidationError, false);
+            this.bypassButton = { ...this.bypassButton, disabled: true };
+        }
+    }
+
+    // Final step - enable/disable Verify button
+    this.validateVerifyButton(this.checkValidity);
+}
+
+
+setValidationMessage(event, message, isInvalid) {
+    const input = event.target;
+    input.setCustomValidity(message || '');
+    input.reportValidity();
+    this.checkValidity = isInvalid;
+}
+
+
+
 
 
 Below are the three final approaches you can include in your design document for this integration scenario (~5,000 records/day with Agent–Manager hierarchy validation).
@@ -316,81 +306,3 @@ AWS creates a Bulk API job.
 AWS uploads the data to Salesforce.
 
 Salesforce inserts the records into a staging object (e.g., Agent_Manager_Staging__c).
-
-An Apex trigger or asynchronous Apex process reads the staging records.
-
-The Apex logic performs:
-
-Agent Contact lookup
-
-Manager Contact lookup
-
-Manager User lookup
-
-Contact creation if required
-
-Updates to Reports To hierarchy
-
-Updates to User ManagerId and TSYS ID
-
-
-After processing completes, the staging records are deleted to free up storage.
-
-
-Pros
-
-Bulk API supports very large payloads (up to ~150 MB).
-
-Requires very few API calls from AWS.
-
-Efficient for large data ingestion jobs.
-
-Staging object allows auditability and tracking of uploaded records.
-
-Suitable for large-scale integrations.
-
-
-Limitations
-
-Requires additional staging object and Apex processing logic.
-
-Integration becomes multi-step (data ingestion + processing).
-
-Bulk API jobs are asynchronous, requiring job monitoring.
-
-More complex architecture compared to REST-based integrations.
-
-Overhead may be unnecessary for moderate volumes like 5,000 records/day.
-
-
-
----
-
-Final Comparison
-
-Parameter	Standard REST API	Apex REST API	Bulk API
-
-Business Logic Location	AWS	Salesforce	Salesforce
-API Calls	High	Low	Very Low
-Data Volume Handling	Moderate	Good	Excellent
-Complexity	Medium	Medium	High
-Real-Time Processing	Yes	Yes	No (Async)
-Best Use Case	Simple integrations	Complex integrations	Very large datasets
-
-
-
----
-
-
-
-Problem Statement (Short)
-
-An integration is required to synchronize Agent–Manager hierarchy data between AWS and Salesforce using the fields Agent BRID, Manager BRID, and TSYS ID received from AWS.
-
-The Contact object represents agents and managers and maintains the reporting hierarchy through the Reports To field, while the User object maintains the system hierarchy through the Manager field.
-
-The system must ensure that the Agent Contact is mapped to the correct Manager Contact. If the Agent Contact does not exist, it should be created using information from the corresponding User record. If the Manager Contact does not exist, the system must check for the Manager User and create a Manager Contact if necessary. If neither exists, the Default Contact Owner should be assigned as the manager.
-
-Additionally, the Agent User record must reflect the correct Manager relationship and TSYS ID based on the data received from AWS.
-
-The goal of this integration is to maintain accurate reporting hierarchy and user information in Salesforce aligned with AWS data.
