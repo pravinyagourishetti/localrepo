@@ -1,3 +1,74 @@
+renderedCallback() {
+    // Run only once when questions are available and modal is open
+    if (this.isverifiedQuestionsAvailable && this.modalIsOpen) {
+
+        // Small delay helps Lightning finish rendering the inputs (common need in modals)
+        setTimeout(() => {
+            const userInputs = this.template.querySelectorAll('[data-type="user-input"]');
+
+            if (userInputs && userInputs.length > 0) {
+                userInputs[0].focus();   // Focus the very first question input
+            }
+        }, 150);   // 100-200ms delay usually works best
+
+        // Prevent running again on every re-render
+        this.isverifiedQuestionsAvailable = false;
+    }
+}
+
+
+
+<template if:true={resultData.questions}>
+  <template for:each={resultData.questions} for:item="q" for:index="index">
+
+    <!-- Render ONLY the current question -->
+    <template if:true={index === currentQuestionIndex}>
+      <div key={q.id} class="question-wrapper slds-m-bottom_medium">
+
+        <label class="slds-form-element_label bold-label" id={q.id}>
+          {q.text}<span style="color: red;">*</span>
+        </label>
+
+        <lightning-input 
+          type={q.type}
+          date-style="short"
+          id={q.code}
+          name={q.id}
+          required
+          autocomplete="off"
+          label={q.text}
+          variant="label-hidden"
+          class={q.dob}
+          maxlength={q.maxlength}
+          onchange={handleValidations}
+          data-type="user-input"
+          aria-required="true">
+        </lightning-input>
+
+        <!-- Your checkbox template here (unchanged) -->
+
+      </div>
+    </template>
+  </template>
+</template>
+
+currentQuestionIndex = 0;
+
+goToNextQuestion() {
+  if (this.currentQuestionIndex < this.resultData.questions.length - 1) {
+    this.currentQuestionIndex++;
+    this.focusCurrentInput();   // reuse the focus logic
+  }
+}
+
+focusCurrentInput() {
+  setTimeout(() => {
+    const currentInput = this.template.querySelector('[data-type="user-input"]');
+    if (currentInput) currentInput.focus();
+  }, 100);
+}
+
+
 <template if:true={resultData.questions}>
   <template for:each={resultData.questions} for:item="q" for:index="index">
     <div key={q.id} class="question-wrapper slds-m-bottom_medium">
