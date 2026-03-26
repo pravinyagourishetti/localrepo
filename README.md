@@ -145,7 +145,36 @@ setValidationMessage(event, message, isInvalid) {
 }
 
 
+<template for:each={resultData.questions} for:item="q" for:index="index">
+  <div key={q.id} class="question-wrapper slds-m-bottom_medium" role="group" aria-labelledby={q.id}>
 
+    <!-- Visible label only for sighted users -->
+    <label class="slds-form-element_label bold-label" id={q.id}>
+      {q.text}<span style="color: red;">*</span>
+    </label>
+
+    <!-- lightning-input - minimal attributes -->
+    <lightning-input 
+      type={q.type}
+      date-style="short"
+      id={q.code}
+      name={q.id}
+      required
+      autocomplete="off"
+      label={q.text}           <!-- internal use only -->
+      variant="label-hidden"
+      class={q.dob}
+      maxlength={q.maxlength}
+      onchange={handleValidations}
+      data-type="user-input"
+      aria-label={q.text}      <!-- main name for screen readers -->
+      aria-required="true">
+    </lightning-input>
+
+    <!-- checkboxes here - no extra aria-live -->
+
+  </div>
+</template>
 
 
 Below are the three final approaches you can include in your design document for this integration scenario (~5,000 records/day with Agent–Manager hierarchy validation).
