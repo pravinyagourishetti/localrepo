@@ -1,6 +1,6 @@
 <template if:true={resultData.questions}>
 
-  <!-- Keep your original intent block exactly as it was -->
+  <!-- Keep your original Call Intent block -->
   <div dir="rtl">
     <!-- USCBCOLLCT-34194 Start-->
     <template if:true={intentvisibility}>
@@ -13,15 +13,15 @@
     <!-- USCBCOLLCT-34194 End-->
   </div>
 
-  <!-- Questions - restored to your original structure (no new wrappers) -->
+  <!-- Clean questions - no extra aria-live or duplicate attributes -->
   <template for:each={resultData.questions} for:item="q" for:index="index">
-    <div key={q.id}>   <!-- removed aria-live="polite" -->
+    <div key={q.id}>
 
       <div style="display: flex;">
         <label 
           class="slds-form-element_label bold-label" 
           id={q.id}
-          for={q.code}>   <!-- added for= to properly link label to input -->
+          for={q.code}>
           {q.text}<span style="color: red;">*</span>
         </label>
       </div>
@@ -40,10 +40,9 @@
         onchange={handleValidations}
         data-type="user-input"
         aria-required="true">
-        <!-- Removed: aria-label, aria-live, aria-valuemax, aria-labelledby, aria-describedby -->
       </lightning-input>
 
-      <!-- Your checkboxes - exactly as before -->
+      <!-- Your original checkboxes unchanged -->
       <template for:each={q.autoFillCheckboxList} for:item="eachCheckBox">
         <div key={eachCheckBox.dob} class={eachCheckBox.className}>
           <lightning-input 
@@ -62,17 +61,88 @@
 
 </template>
 
-
 renderedCallback() {
-    if (this.isverifiedQuestionsAvailable && this.modalIsOpen) {
+    if (this.isVerifiedQuestionsAvailable && this.modalIsOpen) {   // adjusted flag name to match your code
         setTimeout(() => {
-            const firstInput = this.template.querySelector('[data-type="user-input"]');
-            if (firstInput) {
-                firstInput.focus();
+            const userInputs = this.template.querySelectorAll('[data-type="user-input"]');
+            if (userInputs && userInputs.length > 0) {
+                userInputs[0].focus();   // focus first input
             }
-        }, 200);
+        }, 200);   // delay helps in modals
 
-        this.isverifiedQuestionsAvailable = false;
+        this.isVerifiedQuestionsAvailable = false;
     }
 }
+
+handleValidations(event) {
+    const input = event.target;
+    const fieldId = input.id || '';
+    let value = (input.value || '').trim();
+
+    // Reset error first
+    input.setCustomValidity('');
+    input.reportValidity();
+
+    if (fieldId.includes('LAST_4_SSN')) {
+        value = value.replace(/[^0-9]/g, '');
+        input.value = value;
+
+        if (value === '') {
+            input.setCustomValidity(FIELD_NOT_BLANK);
+        } else if (value.length !== 4) {
+            input.setCustomValidity(FIELD_SSN_DIGIT);
+        }
+        // valid case = empty custom validity
+        input.reportValidity();
+        this.checkValidity = !input.validity.valid;
+    } 
+    else if (fieldId.includes('DATE_OF_BIRTH')) {
+        // your existing date logic here...
+        this.dobvalidation(event);
+        // At the end of dobvalidation, use setCustomValidity + reportValidity
+    } 
+    else if (fieldId.includes('PHONE_ON_PROFILE')) {
+        value = value.replace(/\D/g, '');
+        input.value = value;
+
+        if (value === '') {
+            input.setCustomValidity(FIELD_NOT_BLANK);
+        } else if (value.length !== 10) {
+            input.setCustomValidity(FIELD_PHONE_DIGIT);
+        }
+        input.reportValidity();
+        this.checkValidity = !input.validity.valid;
+    } 
+    else if (fieldId.includes('ACCOUNT_NUMBER')) {
+        value = value.replace(/[^0-9]/g, '');
+        input.value = value;
+
+        if (value === '') {
+            input.setCustomValidity(FIELD_NOT_BLANK);
+        } else if (value.length !== 16) {
+            input.setCustomValidity(FIELD_ACC_NUMBER);
+        }
+        input.reportValidity();
+        this.checkValidity = !input.validity.valid;
+    } 
+    else if (fieldId.includes('MAGIC_PASSWORD')) {
+        let magicPasswordValue = value;
+        let magicPasswordCheck = handleAlphaNumericValidation(magicPasswordValue);
+        this.isDisplayUnidentifiedPrsn = false;   // fixed typo
+
+        if (magicPasswordValue === '') {
+            input.setCustomValidity(FIELD_NOT_BLANK);
+        } else if (!magicPasswordCheck) {
+            input.setCustomValidity(this.labelUtility?.constants?.VerbalPwdValidationError || 'Invalid password');
+        }
+        input.reportValidity();
+        this.checkValidity = !input.validity.valid;
+
+        this.bypassButton = { ...this.bypassButton, disabled: magicPasswordValue === '' };
+    }
+
+    this.validateVerifyButton(this.checkValidity);
+}
+
+<div class="sids-modal content spinnerPosition" id="modal-content-id-1">   <!-- remove aria-live="polite" -->
 
