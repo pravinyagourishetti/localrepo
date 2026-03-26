@@ -1,17 +1,24 @@
-
-// At the top of your class, with other properties
+// Add these properties at the class level
 currentQuestionIndex = 0;
 
-// Getter that returns true only for the current question
-get isCurrentQuestion() {
-    return (index) => index === this.currentQuestionIndex;
+// Add this getter (simple boolean)
+get currentQuestions() {
+    if (!this.resultData?.questions) return [];
+    
+    return this.resultData.questions.map((q, index) => ({
+        ...q,
+        isCurrent: index === this.currentQuestionIndex   // this works
+    }));
 }
 
-<template if:true={resultData.questions}>
-  <template for:each={resultData.questions} for:item="q" for:index="index">
 
-    <!-- Only show the current question - use the getter correctly -->
-    <template if:true={isCurrentQuestion(index)}>
+
+<template if:true={resultData.questions}>
+  <template for:each={currentQuestions} for:item="q" for:index="index">
+
+    <!-- Only the current question will render -->
+    <template if:true={q.isCurrent}>
+
       <div key={q.id} class="question-wrapper slds-m-bottom_medium">
 
         <label class="slds-form-element_label bold-label" id={q.id}>
@@ -34,7 +41,7 @@ get isCurrentQuestion() {
           aria-required="true">
         </lightning-input>
 
-        <!-- Your existing checkbox template goes here -->
+        <!-- Your checkbox template (keep exactly as before) -->
         <template for:each={q.autoFillCheckboxList} for:item="eachCheckBox">
           <div key={eachCheckBox.dob} class={eachCheckBox.className}>
             <lightning-input 
@@ -49,6 +56,7 @@ get isCurrentQuestion() {
         </template>
 
       </div>
+
     </template>
 
   </template>
@@ -69,16 +77,15 @@ renderedCallback() {
 }
 
 
-
-
-
 goToNextQuestion() {
     if (this.currentQuestionIndex < this.resultData.questions.length - 1) {
         this.currentQuestionIndex++;
-        // Re-focus the new question
+        // Focus the new question automatically
         setTimeout(() => {
             const currentInput = this.template.querySelector('[data-type="user-input"]');
             if (currentInput) currentInput.focus();
         }, 100);
     }
 }
+
+
