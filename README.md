@@ -1,10 +1,30 @@
 <template if:true={resultData.questions}>
-  <template for:each={resultData.questions} for:item="q" for:index="index">
-    <div key={q.id} class="question-wrapper slds-m-bottom_medium">
 
-      <label class="slds-form-element_label bold-label" id={q.id}>
-        {q.text}<span style="color: red;">*</span>
-      </label>
+  <!-- Keep your original intent block exactly as it was -->
+  <div dir="rtl">
+    <!-- USCBCOLLCT-34194 Start-->
+    <template if:true={intentvisibility}>
+      <div class="containterInt">
+        <label>Call Intent: </label>
+      </div>
+      <label>{callintentuIvalue}</label>
+      <br />
+    </template>
+    <!-- USCBCOLLCT-34194 End-->
+  </div>
+
+  <!-- Questions - restored to your original structure (no new wrappers) -->
+  <template for:each={resultData.questions} for:item="q" for:index="index">
+    <div key={q.id}>   <!-- removed aria-live="polite" -->
+
+      <div style="display: flex;">
+        <label 
+          class="slds-form-element_label bold-label" 
+          id={q.id}
+          for={q.code}>   <!-- added for= to properly link label to input -->
+          {q.text}<span style="color: red;">*</span>
+        </label>
+      </div>
 
       <lightning-input 
         type={q.type}
@@ -20,9 +40,10 @@
         onchange={handleValidations}
         data-type="user-input"
         aria-required="true">
+        <!-- Removed: aria-label, aria-live, aria-valuemax, aria-labelledby, aria-describedby -->
       </lightning-input>
 
-      <!-- Your checkbox template - keep exactly as you had it -->
+      <!-- Your checkboxes - exactly as before -->
       <template for:each={q.autoFillCheckboxList} for:item="eachCheckBox">
         <div key={eachCheckBox.dob} class={eachCheckBox.className}>
           <lightning-input 
@@ -38,6 +59,7 @@
 
     </div>
   </template>
+
 </template>
 
 
@@ -48,8 +70,9 @@ renderedCallback() {
             if (firstInput) {
                 firstInput.focus();
             }
-        }, 200);   // slightly longer delay often helps in modals
+        }, 200);
 
         this.isverifiedQuestionsAvailable = false;
     }
 }
+
